@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  phone         String?
+  fullName      String?   @map("full_name")
+  country       String?   @db.VarChar(2)
+  kycStatus     String    @default("PENDING") @map("kyc_status")
+  kycProviderId String?   @map("kyc_provider_id")
+  kycApprovedAt DateTime? @map("kyc_approved_at")
+  tier          String    @default("BASIC")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  recipients   Recipient[]
+  quotes       Quote[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Recipient {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  fullName      String   @map("full_name")
+  bankName      String?  @map("bank_name")
+  sortCode      String   @map("sort_code") @db.VarChar(6)
+  accountNumber String   @map("account_number") @db.VarChar(8)
+  country       String   @default("GB") @db.VarChar(2)
+  isVerified    Boolean  @default(false) @map("is_verified")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("recipients")
+}
+
+model Quote {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  sendCurrency    String   @map("send_currency") @db.VarChar(3)
+  receiveCurrency String   @map("receive_currency") @db.VarChar(3)
+  sendAmount      Decimal  @map("send_amount") @db.Decimal(18, 2)
+  receiveAmount   Decimal  @map("receive_amount") @db.Decimal(18, 2)
+  midMarketRate   Decimal  @map("mid_market_rate") @db.Decimal(18, 8)
+  appliedRate     Decimal  @map("applied_rate") @db.Decimal(18, 8)
+  spreadPct       Decimal  @map("spread_pct") @db.Decimal(5, 4)
+  flatFee         Decimal  @map("flat_fee") @db.Decimal(18, 2)
+  totalFee        Decimal  @map("total_fee") @db.Decimal(18, 2)
+  expiresAt       DateTime @map("expires_at")
+  isUsed          Boolean  @default(false) @map("is_used")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@map("quotes")
+}
+
+model Transaction {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  quoteId          String    @map("quote_id")
+  recipientId      String    @map("recipient_id")
+  status           String    @default("INITIATED")
+  sendAmount       Decimal   @map("send_amount") @db.Decimal(18, 2)
+  sendCurrency     String    @map("send_currency") @db.VarChar(3)
+  receiveAmount    Decimal   @map("receive_amount") @db.Decimal(18, 2)
+  receiveCurrency  String    @map("receive_currency") @db.VarChar(3)
+  feeAmount        Decimal   @map("fee_amount") @db.Decimal(18, 2)
+  appliedRate      Decimal   @map("applied_rate") @db.Decimal(18, 8)
+  paymentMethod    String?   @map("payment_method")
+  paymentProviderId String?  @map("payment_provider_id")
+  fiatReceivedAt   DateTime? @map("fiat_received_at")
+  usdcAmount       Decimal?  @map("usdc_amount") @db.Decimal(18, 6)
+  blockchainNetwork String?  @map("blockchain_network") @default("solana")
+  blockchainTxHash String?   @map("blockchain_tx_hash")
+  blockchainFee    Decimal?  @map("blockchain_fee") @db.Decimal(18, 6)
+  settledAt        DateTime? @map("settled_at")
+  otcProvider      String?   @map("otc_provider")
+  otcReference     String?   @map("otc_reference")
+  gbpReceived      Decimal?  @map("gbp_received") @db.Decimal(18, 2)
+  convertedAt      DateTime? @map("converted_at")
+  payoutProvider   String?   @map("payout_provider")
+  payoutReference  String?   @map("payout_reference")
+  payoutInitiatedAt DateTime? @map("payout_initiated_at")
+  completedAt      DateTime? @map("completed_at")
+  failureReason    String?   @map("failure_reason")
+  failureStep      String?   @map("failure_step")
+  retryCount       Int       @default(0) @map("retry_count")
+  maxRetries       Int       @default(3) @map("max_retries")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id])
+  quote     Quote     @relation(fields: [quoteId], references: [id])
+  recipient Recipient @relation(fields: [recipientId], references: [id])
+
+  statusLogs    TransactionStatusLog[]
+  ledgerEntries LedgerEntry[]
+
+  @@map("transactions")
+}
+
+model TransactionStatusLog {
+  id            String   @id @default(uuid())
+  transactionId String   @map("transaction_id")
+  fromStatus    String?  @map("from_status")
+  toStatus      String   @map("to_status")
+  triggeredBy   String?  @map("triggered_by")
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+
+  @@map("transaction_status_log")
+}
+
+model LedgerAccount {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  type      String
+  currency  String   @db.VarChar(10)
+  balance   Decimal  @default(0) @db.Decimal(18, 6)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  entries LedgerEntry[]
+
+  @@map("ledger_accounts")
+}
+
+model LedgerEntry {
+  id            String   @id @default(uuid())
+  transactionId String   @map("transaction_id")
+  journalId     String   @map("journal_id")
+  accountCode   String   @map("account_code")
+  entryType     String   @map("entry_type")
+  amount        Decimal  @db.Decimal(18, 6)
+  currency      String   @db.VarChar(10)
+  description   String
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  transaction Transaction  @relation(fields: [transactionId], references: [id])
+  account     LedgerAccount @relation(fields: [accountCode], references: [code])
+
+  @@map("ledger_entries")
+}
