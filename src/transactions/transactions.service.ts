@@ -227,33 +227,16 @@ export class TransactionsService {
                 },
             ]);
 
-            // LEDGER: Gas fee
-            await this.ledger.recordJournal(txId, [
-                {
-                    accountCode: 'EXPENSE:GAS_FEES',
-                    entryType: 'DEBIT',
-                    amount: solTx.gasFee,
-                    currency: 'USDC',
-                    description: 'Solana gas fee',
-                },
-                {
-                    accountCode: 'ASSET:USDC:HOT_WALLET_US',
-                    entryType: 'CREDIT',
-                    amount: solTx.gasFee,
-                    currency: 'USDC',
-                    description: 'Gas fee paid from US wallet',
-                },
-            ]);
-
             // ═══════════════════════════════════════════
             // STEP 4: Sell USDC for GBP via OTC
-            // Use the QUOTE's rate — not a new calculation
+            // Use the EXACT quoted amount — rate is frozen at quote time
             // ═══════════════════════════════════════════
             this.logger.log(`[${txId.substring(0, 8)}] Step 4: Converting USDC to GBP...`);
 
-            // Use the exact receive amount from the quote
-            // This is what we promised the user — deliver exactly this
             const promisedGBP = Number(tx.receiveAmount);
+
+            // Simulate OTC processing delay
+            await this.delay(1000 + Math.random() * 2000);
 
             await this.updateStatus(txId, 'FIAT_CONVERTED', {
                 otcProvider: 'simulated_otc',
@@ -287,7 +270,7 @@ export class TransactionsService {
                     entryType: 'DEBIT',
                     amount: promisedGBP,
                     currency: 'GBP',
-                    description: 'GBP received from OTC conversion',
+                    description: `GBP received from OTC conversion`,
                 },
                 {
                     accountCode: 'REVENUE:SPREAD',
@@ -323,7 +306,7 @@ export class TransactionsService {
                 payoutInitiatedAt: new Date(),
             });
 
-            // LEDGER: GBP paid out to recipient (exact quoted amount)
+            // LEDGER: GBP paid out to recipient
             await this.ledger.recordJournal(txId, [
                 {
                     accountCode: 'EXPENSE:OFFRAMP_FEES',

@@ -6,7 +6,7 @@ import { FxRateService } from './fx-rate.service';
 export class QuoteService {
     private readonly DEFAULT_SPREAD_PCT = 0.0039;
     private readonly DEFAULT_FLAT_FEE = 0.99;
-    private readonly QUOTE_EXPIRY_SECONDS = 60;
+    private readonly QUOTE_EXPIRY_SECONDS = 600;
 
     constructor(private prisma: PrismaService, private fxRateService: FxRateService) { }
 
