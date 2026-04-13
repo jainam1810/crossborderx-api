@@ -4,8 +4,8 @@ import { FxRateService } from './fx-rate.service';
 
 @Injectable()
 export class QuoteService {
-    private readonly DEFAULT_SPREAD_PCT = 0.005;
-    private readonly DEFAULT_FLAT_FEE = 2.0;
+    private readonly DEFAULT_SPREAD_PCT = 0.0039;
+    private readonly DEFAULT_FLAT_FEE = 0.99;
     private readonly QUOTE_EXPIRY_SECONDS = 60;
 
     constructor(private prisma: PrismaService, private fxRateService: FxRateService) { }
@@ -29,7 +29,7 @@ export class QuoteService {
                 midMarketRate: quote.midMarketRate,
                 appliedRate: quote.appliedRate,
                 spreadPct: quote.spreadPct,
-                flatFee: quote.flatFee,
+                flatFee: this.DEFAULT_FLAT_FEE,
                 totalFee: quote.totalFee,
                 expiresAt,
             },
