@@ -19,11 +19,19 @@ export class FxRateService {
         return rate;
     }
 
-    calculateQuote(sendAmount: number, midRate: number, spreadPct: number, flatFee: number) {
+    calculateQuote(
+        sendAmount: number,
+        midRate: number,
+        spreadPct: number,
+        flatFee: number,
+    ) {
         const appliedRate = midRate * (1 - spreadPct);
         const netSendAmount = sendAmount - flatFee;
         const receiveAmount = parseFloat((netSendAmount * appliedRate).toFixed(2));
-        const spreadRevenue = parseFloat((netSendAmount * midRate - netSendAmount * appliedRate).toFixed(2));
+
+        const spreadRevenue = parseFloat(
+            (netSendAmount * midRate - netSendAmount * appliedRate).toFixed(2),
+        );
         const totalFee = parseFloat((flatFee + spreadRevenue).toFixed(2));
 
         return {
