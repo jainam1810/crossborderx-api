@@ -21,6 +21,17 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
+
+# Phase 1 is COMPLETE! 🎉
+Here's what you've built so far:
+
+✅ PostgreSQL database running with all 7 tables
+✅ Redis cache running
+✅ 13 ledger accounts seeded (the financial backbone)
+✅ User registration with password hashing
+✅ Login with JWT token generation
+✅ Protected routes (the /me endpoint needs a valid token)
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -86,6 +97,7 @@ Check out a few resources that may come in handy when working with NestJS:
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
 
 ## Stay in touch
 
