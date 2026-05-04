@@ -18,6 +18,7 @@ model User {
   kycProviderId String?   @map("kyc_provider_id")
   kycApprovedAt DateTime? @map("kyc_approved_at")
   tier          String    @default("BASIC")
+  isAdmin      Boolean  @default(false)
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
