@@ -7,6 +7,7 @@ import { RecipientsModule } from './recipients/recipients.module';
 import { CryptoModule } from './crypto/crypto.module';
 import { PayoutModule } from './payout/payout.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     CryptoModule,
     PayoutModule,
     TransactionsModule,
+    AdminModule,
   ],
 })
 export class AppModule { }
