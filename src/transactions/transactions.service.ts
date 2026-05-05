@@ -247,43 +247,43 @@ export class TransactionsService {
                 convertedAt: new Date(),
             });
 
-            // LEDGER: Remove USDC from UK wallet
+            // LEDGER 4a (USDC journal): USDC leaves UK wallet for OTC.
+            // Pure USDC transfer — balances within USDC.
             await this.ledger.recordJournal(txId, [
                 {
                     accountCode: 'EXPENSE:OFFRAMP_FEES',
                     entryType: 'DEBIT',
                     amount: usdc.usdcAmount,
                     currency: 'USDC',
-                    description: 'USDC sent to OTC for GBP conversion',
+                    description: 'USDC sent to OTC pending GBP delivery',
                 },
                 {
                     accountCode: 'ASSET:USDC:HOT_WALLET_UK',
                     entryType: 'CREDIT',
                     amount: usdc.usdcAmount,
                     currency: 'USDC',
-                    description: 'USDC sold for GBP via OTC',
+                    description: 'USDC sent to OTC',
                 },
             ]);
 
-            // LEDGER: GBP arrives in ClearBank, balanced against liability owed to recipient.
-            // (Revenue is already booked at fee-collection time in Step 1; we don't double-count.)
+            // LEDGER 4b (GBP journal): GBP arrives in ClearBank, balanced against
+            // liability owed to recipient. Pure GBP, balances within currency.
             await this.ledger.recordJournal(txId, [
                 {
                     accountCode: 'ASSET:GBP:CLEARBANK',
                     entryType: 'DEBIT',
                     amount: promisedGBP,
                     currency: 'GBP',
-                    description: `GBP received from OTC conversion`,
+                    description: 'GBP received from OTC for tx delivery',
                 },
                 {
                     accountCode: 'LIABILITY:GBP:USER_FUNDS',
                     entryType: 'CREDIT',
                     amount: promisedGBP,
                     currency: 'GBP',
-                    description: `GBP owed to recipient pending FPS payout`,
+                    description: 'GBP owed to recipient pending FPS payout',
                 },
             ]);
-
             // ═══════════════════════════════════════════
             // STEP 5: Send GBP via Faster Payments
             // Send EXACTLY what we quoted — no more deductions
@@ -309,8 +309,8 @@ export class TransactionsService {
                 payoutInitiatedAt: new Date(),
             });
 
-            // LEDGER: GBP paid out to recipient
-            // LEDGER: GBP paid out — clear the liability AND reduce ClearBank cash.
+            // LEDGER (GBP journal): GBP delivered. Clear the recipient liability,
+            // reduce ClearBank cash. Pure GBP, balances within currency.
             await this.ledger.recordJournal(txId, [
                 {
                     accountCode: 'LIABILITY:GBP:USER_FUNDS',
@@ -333,6 +333,29 @@ export class TransactionsService {
             // In production: ClearBank webhook triggers this
             // ═══════════════════════════════════════════
             this.logger.log(`[${txId.substring(0, 8)}] Step 6: Complete!`);
+
+            // LEDGER (USD journal): The user paid us $1000 to send GBP. The GBP has
+            // been delivered. The user's claim on us is therefore discharged.
+            // We close the obligation by debiting their liability and crediting it
+            // against EXPENSE:OFFRAMP_FEES, which now balances out the USDC entry
+            // from Step 4a. Pure USD, balances within currency.
+            const netSettledUsd = Number(tx.sendAmount) - Number(tx.feeAmount);
+            await this.ledger.recordJournal(txId, [
+                {
+                    accountCode: 'LIABILITY:USD:USER_FUNDS',
+                    entryType: 'DEBIT',
+                    amount: netSettledUsd,
+                    currency: 'USD',
+                    description: 'User obligation discharged — recipient paid out',
+                },
+                {
+                    accountCode: 'EXPENSE:OFFRAMP_FEES',
+                    entryType: 'CREDIT',
+                    amount: netSettledUsd,
+                    currency: 'USD',
+                    description: 'Offset the USDC bridge entry from Step 4a',
+                },
+            ]);
 
             await this.updateStatus(txId, 'COMPLETED', {
                 completedAt: new Date(),
