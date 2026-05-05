@@ -91,6 +91,14 @@ export class PayoutService {
         this.logger.log(`FPS payment sent: ${result.paymentId} (fee: £${payoutFee})`);
         return result;
     }
+    /**
+    * Health check.
+    * In simulation mode: returns instantly with mode='simulated'.
+    * In production: will ping ClearBank/B2C2 status endpoints and return real latency.
+    */
+    async healthCheck(): Promise<{ ok: boolean; mode: 'simulated' | 'live'; providers: string[] }> {
+        return { ok: true, mode: 'simulated', providers: ['b2c2', 'clearbank'] };
+    }
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));

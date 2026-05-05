@@ -131,8 +131,10 @@ export class TransactionsService {
 
             // LEDGER: Collect your fees
             const feeAmount = Number(tx.feeAmount);
-            const flatFee = 2.0;
-            const spreadRevenue = feeAmount - flatFee;
+            // Read the actual flat fee from the quote, not a hardcoded value.
+            const quoteForFees = await this.prisma.quote.findUnique({ where: { id: tx.quoteId } });
+            const flatFee = Number(quoteForFees?.flatFee ?? 0);
+            const spreadRevenue = parseFloat((feeAmount - flatFee).toFixed(2));
 
             await this.ledger.recordJournal(txId, [
                 {
@@ -263,7 +265,8 @@ export class TransactionsService {
                 },
             ]);
 
-            // LEDGER: GBP arrives in ClearBank
+            // LEDGER: GBP arrives in ClearBank, balanced against liability owed to recipient.
+            // (Revenue is already booked at fee-collection time in Step 1; we don't double-count.)
             await this.ledger.recordJournal(txId, [
                 {
                     accountCode: 'ASSET:GBP:CLEARBANK',
@@ -273,11 +276,11 @@ export class TransactionsService {
                     description: `GBP received from OTC conversion`,
                 },
                 {
-                    accountCode: 'REVENUE:SPREAD',
+                    accountCode: 'LIABILITY:GBP:USER_FUNDS',
                     entryType: 'CREDIT',
                     amount: promisedGBP,
                     currency: 'GBP',
-                    description: 'GBP received from OTC conversion',
+                    description: `GBP owed to recipient pending FPS payout`,
                 },
             ]);
 
@@ -307,13 +310,14 @@ export class TransactionsService {
             });
 
             // LEDGER: GBP paid out to recipient
+            // LEDGER: GBP paid out — clear the liability AND reduce ClearBank cash.
             await this.ledger.recordJournal(txId, [
                 {
-                    accountCode: 'EXPENSE:OFFRAMP_FEES',
+                    accountCode: 'LIABILITY:GBP:USER_FUNDS',
                     entryType: 'DEBIT',
                     amount: promisedGBP,
                     currency: 'GBP',
-                    description: `GBP delivered to ${recipient.fullName}`,
+                    description: `Cleared liability — paid recipient ${recipient.fullName}`,
                 },
                 {
                     accountCode: 'ASSET:GBP:CLEARBANK',
