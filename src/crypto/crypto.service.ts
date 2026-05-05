@@ -90,6 +90,14 @@ export class CryptoService {
         // Simulated balance
         return wallet === 'US' ? 50000.0 : 12000.0;
     }
+    /**
+    * Health check.
+    * In simulation mode: returns instantly with mode='simulated'.
+    * In production: will ping Circle's status endpoint and return real latency.
+    */
+    async healthCheck(): Promise<{ ok: boolean; mode: 'simulated' | 'live'; provider: string }> {
+        return { ok: true, mode: 'simulated', provider: 'circle' };
+    }
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
