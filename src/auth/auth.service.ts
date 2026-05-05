@@ -68,6 +68,7 @@ export class AuthService {
             fullName: user.fullName,
             kycStatus: user.kycStatus,
             tier: user.tier,
+            isAdmin: user.isAdmin,
         };
     }
 }
