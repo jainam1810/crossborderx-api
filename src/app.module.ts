@@ -8,6 +8,7 @@ import { CryptoModule } from './crypto/crypto.module';
 import { PayoutModule } from './payout/payout.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { AdminModule } from './admin/admin.module';
+import { SolanaModule } from './solana/solana.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AdminModule } from './admin/admin.module';
     QuoteModule,
     RecipientsModule,
     CryptoModule,
+    SolanaModule,
     PayoutModule,
     TransactionsModule,
     AdminModule,
