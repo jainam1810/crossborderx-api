@@ -1,3 +1,81 @@
+# CrossBorderX
+
+A US→UK (and planned US→India) remittance platform using **stablecoins as invisible settlement infrastructure**. The sender pays in fiat, the recipient receives fiat, and USDC on Solana moves the value across the border in the middle.
+
+> **Status:** Technically complete prototype. Kept as a portfolio piece - not pursued as a startup. See the post-mortem below for why.
+
+---
+
+## What It Does
+
+The blockchain is invisible plumbing - neither sender nor recipient touches crypto.
+
+```
+Sender (USD) → Stripe (collect) → Circle (USD→USDC) → Solana (US→UK wallet)
+→ B2C2 (USDC→GBP) → ClearBank (Faster Payments) → Recipient (GBP)
+```
+
+To make transfers feel instant despite slow funding, the design used a **prefunded USDC liquidity pool**: pay the recipient immediately from our own float, then let the sender's slow payment refill the pool in the background.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend | NestJS + TypeScript (deployed on Render) |
+| Frontend | Next.js + TypeScript + Tailwind (deployed on Vercel) |
+| Database | PostgreSQL via Supabase |
+| ORM | Prisma |
+| Blockchain | Solana (devnet) + USDC SPL token |
+| Payments (designed) | Stripe, Circle Mint, B2C2, ClearBank |
+
+**What works end-to-end:** real on-chain USDC settlement on Solana devnet, a double-entry append-only ledger with reconciliation, a 7-step transaction orchestrator with a state machine, an admin dashboard, and a fully deployed cloud stack.
+
+**The technology was never the problem. The business model was.**
+
+---
+
+# Post-Mortem: Why the Business Model Didn't Work
+
+## Why It Failed - Four Compounding Reasons
+
+### 1. The liquidity pool requires capital we don't have
+To front payments instantly while waiting 2–3 days for ACH to clear, we'd need roughly **4–5x daily volume** sitting idle as float (~$45K for $10K/day, ~$1M+ for real volume). Remittance is structurally capital-intensive; the float is dead money you must own before earning anything. As a solo builder with no budget, this alone is a hard blocker.
+
+### 2. The funding rail destroys the margin
+Stripe **card** payments cost ~2.9% (~$30 on $1000) - more than the entire transfer should cost. Stripe **ACH** is cheaper (~0.8%, capped ~$5) but takes 2–3 days to settle, which only works *with* the float pool from problem #1. Either way, the on-ramp (fiat→USDC) eats most of the margin before we add a cent of our own fee.
+
+### 3. The India corridor is killed by the 1% TDS + regulatory grey zone
+India charges a **1% TDS on every crypto conversion** (~$10 on $1000) plus a 30% tax on gains, and the RBI's stance on crypto-as-remittance-rail is unsettled and tightening. This tax hits the crypto rail but **not** fiat competitors like Wise - making us structurally ~4–5x more expensive on India despite cheap UPI payout rails.
+
+### 4. We can't beat incumbents on the corridors we chose
+- **US→UK:** Wise does it all-in for ~0.5–0.7%, door-to-door, no crypto step. Our all-in was ~1.5–4%. We lose.
+- **US→India / UK→India:** Wise and specialists do ~0.4–0.7%. Our crypto-tax-laden cost was ~2.5–3%. We lose.
+
+The pattern: **any large, popular corridor is already cheap and competitive.** Stablecoins only win on hard, expensive, neglected corridors (parts of Africa/LatAm) where incumbents charge 6–8%.
+
+---
+
+## The Deeper Lesson
+
+Even on the corridors where stablecoins *do* win, the infrastructure is already commoditized. Well-funded players - **Bitso** ($6.5B US→Mexico volume), **Felix Pago** ($1B+ via WhatsApp), **LemFi** (backed by Tether), **SukuPay** (US→Guatemala at $0.99 flat) - already do cheap, fast USDC settlement. As one industry analysis put it: *the moat is no longer infrastructure, it's distribution.*
+
+**The technology of moving USDC across borders is solved and cheap.** The value is in owning a specific community's trust, channel, and spending behavior - not in building better pipes. A solo builder cannot win the infrastructure war against VC-funded incumbents, and we had no distribution wedge into a specific underserved community.
+
+---
+
+## Verdict
+
+A technically successful prototype and a genuinely valuable learning project - but not a viable business as designed, because:
+
+- The float model needs capital we don't have.
+- The cheap funding rail (ACH) needs that same float to feel instant.
+- Our target corridors (UK/India) are already cheaper via incumbents.
+- The corridors where we'd win require distribution and partnerships we don't have, against competitors who already own them.
+
+**Kept as a portfolio piece** demonstrating fintech architecture, blockchain settlement, double-entry ledgers, and full-stack cloud deployment - not pursued as a startup.
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
