@@ -22,15 +22,15 @@
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 
-# Phase 1 is COMPLETE! 🎉
+# Phase 1 is COMPLETE!
 Here's what you've built so far:
 
-✅ PostgreSQL database running with all 7 tables
-✅ Redis cache running
-✅ 13 ledger accounts seeded (the financial backbone)
-✅ User registration with password hashing
-✅ Login with JWT token generation
-✅ Protected routes (the /me endpoint needs a valid token)
+- PostgreSQL database running with all 7 tables
+- Redis cache running
+- 13 ledger accounts seeded (the financial backbone)
+- User registration with password hashing
+- Login with JWT token generation
+- Protected routes (the /me endpoint needs a valid token)
 
 ## Description
 
