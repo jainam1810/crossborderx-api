@@ -101,10 +101,6 @@ A technically successful prototype and a genuinely valuable learning project - b
 
 
 # Phase 1 is COMPLETE!
-Here's what you've built so far:
-
-- User registration with password hashing
-- Login with JWT token generation
 - Protected routes (the /me endpoint needs a valid token)
 
 ## Description
