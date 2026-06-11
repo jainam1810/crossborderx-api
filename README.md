@@ -103,7 +103,6 @@ A technically successful prototype and a genuinely valuable learning project - b
 # Phase 1 is COMPLETE!
 Here's what you've built so far:
 
-- PostgreSQL database running with all 7 tables
 - Redis cache running
 - 13 ledger accounts seeded (the financial backbone)
 - User registration with password hashing
