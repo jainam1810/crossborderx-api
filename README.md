@@ -99,10 +99,6 @@ A technically successful prototype and a genuinely valuable learning project - b
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-
-# Phase 1 is COMPLETE!
-- Protected routes (the /me endpoint needs a valid token)
-
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
