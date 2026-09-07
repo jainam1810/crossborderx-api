@@ -3,7 +3,7 @@
 A US→UK (and planned US→India) remittance platform using **stablecoins as invisible settlement infrastructure**. The sender pays in fiat, the recipient receives fiat, and USDC on Solana moves the value across the border in the middle.
 
 > **Status:** Technically complete prototype. Kept as a portfolio piece - not pursued as a startup. See the post-mortem below for why.
-
+> **Frontend:** https://github.com/jainam1810/crossborderx-frontend 
 ---
 
 ## What It Does
