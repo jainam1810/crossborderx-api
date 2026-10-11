@@ -32,7 +32,7 @@ To make transfers feel instant despite slow funding, the design used a **prefund
 
 **What works end-to-end:** real on-chain USDC settlement on Solana devnet, a double-entry append-only ledger with reconciliation, a 7-step transaction orchestrator with a state machine, an admin dashboard, and a fully deployed cloud stack.
 
-**The technology was never the problem. The business model was.**
+**The technology was never the problem. The business model was!**
 
 ---
 
